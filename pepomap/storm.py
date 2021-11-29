@@ -38,5 +38,5 @@ _colors = [
     [0.9, 0.9, 0.9],
 ]
 
-cmap = LinearSegmentedColormap.from_list("ons", _colors)
-cmap_r = LinearSegmentedColormap.from_list("ons", _colors[::-1])
+cmap = LinearSegmentedColormap.from_list("storm", _colors)
+cmap_r = LinearSegmentedColormap.from_list("storm", _colors[::-1])
