@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "pepomap"
+version = "0.1.0"
+description = ""
+authors = ["ericmiguel <ericmiguel@id.uff.br>"]
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
+
+[tool.poetry.dependencies]
+python = ">=3.8.0,<3.11"
+matplotlib = "^3.5.0"
+numpy = "^1.21.4"
+
+[tool.poetry.dev-dependencies]
+isort = "^5.8.0"
+black = "^21.6b0"
+mypy = "^0.902"
+pydocstyle = "^6.1.1"
+flake9 = "^3.8.3"
+pre-commit = "^2.13.0"
+pytest = "6.0.0"
+
+[tool.isort]
+profile = "black"
+force_single_line = true
+atomic = true
+include_trailing_comma = true
+lines_after_imports = 2
+lines_between_types = 1
+use_parentheses = true
+src_paths = ["poetry", "tests"]
+filter_files = true
+known_first_party = "poetry"
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "F401 ./arquivo_a_ignorar.py"
+max-complexity = 10
+exclude = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    "*.egg-info",
+    ".pytest_cache",
+    ".mypy_cache"
+]
+ignore = [  # alertas e erros por conta do black
+    "E501", # linha longa
+    "E203", # espaço antes de ':'
+    "E225", # sem espaço ao redor de operadores 
+    "W503", # quebra de linha antes de um operador binário
+    "W504"  # quebra de linha após um operador binário line
+]
+
+[tool.pydocstyle]
+convention = "numpy"
+add-ignore = "D401"
+match = '(?!test_|tests).*\.py'  # ignora arquivos python contendo "test_" ou "tests"
+match-dir = "[^\tests|.].*"  # ignora diretórios iniciados com "." ou "tests"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
