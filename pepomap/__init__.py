@@ -21,7 +21,12 @@ if __name__ == "__main__":
     fig.savefig("pepomap_colormaps_lightbg.png", bbox_inches="tight", facecolor="white")
 
     with plt.rc_context(
-        {"xtick.color": "white", "ytick.color": "white", "text.color": "white"}
+        {
+            "xtick.color": "white",
+            "ytick.color": "white",
+            "text.color": "white",
+            "figure.facecolor": "none",
+        }
     ):
         fig, ax = tools.display_colormaps(cmaps)
-        fig.savefig("pepomap_colormaps_darkbg.png", bbox_inches="tight", facecolor=None)
+        fig.savefig("pepomap_colormaps_darkbg.png", bbox_inches="tight")
