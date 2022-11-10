@@ -4,6 +4,6 @@ set -e
 set -x
 
 mypy peepomap
-flake8 peepomap tests
-black peepomap tests --check
+flake8 peepomap
+black peepomap --check
 pydocstyle peepomap
