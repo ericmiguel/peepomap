@@ -1,5 +1,15 @@
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+from matplotlib import colors as mcolors
+
+
+def hex_to_decimal_rgb(colors: List[str]) -> List[List[float]]:
+    rgb_colors = np.array([np.array(mcolors.to_rgb(color)) for color in colors])
+
+    return rgb_colors.tolist()
 
 
 def display_colormaps(cmaps):
