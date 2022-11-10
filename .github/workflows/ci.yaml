@@ -47,5 +47,3 @@ jobs:
         run: poetry run pydocstyle peepomap
       - name: Run Mypy
         run: poetry run mypy peepomap --enable-incomplete-features
-      - name: Run Pytest
-        run: poetry run pytest --cov=peepomap tests/datetime

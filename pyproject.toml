@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "peepomap"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["ericmiguel <ericmiguel@id.uff.br>"]
+keywords = ["matplotlib", "colormaps"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/ericmiguel/peepomap"
 
 [tool.mypy]
 check_untyped_defs = true

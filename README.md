@@ -37,9 +37,3 @@ Create the virtual env using [Poetry](https://github.com/python-poetry/poetry):
 ```bash
 poetry install
 ```
-
-## ⚗️ Testing
-
-```bash
-poetry run pytest --cov=peepomap tests/
-```
