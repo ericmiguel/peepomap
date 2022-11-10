@@ -1,3 +1,5 @@
+"""Plot colormap samples used in README."""
+
 if __name__ == "__main__":
     from pathlib import Path as path
 

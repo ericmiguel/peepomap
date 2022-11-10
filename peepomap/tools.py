@@ -1,18 +1,26 @@
+"""Misc tools, mainly for internal use."""
+
+from typing import Dict
 from typing import List
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib import colors as mcolors
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
 def hex_to_decimal_rgb(colors: List[str]) -> List[List[float]]:
+    """Convert a list of hexadecimal colors to decimal RGB."""
     rgb_colors = np.array([np.array(mcolors.to_rgb(color)) for color in colors])
 
-    return rgb_colors.tolist()
+    return list(rgb_colors.tolist())
 
 
-def display_colormaps(cmaps):
+def display_colormaps(cmaps: Dict[str, List[List[float]]]) -> Tuple[Figure, Axes]:
+    """Display avaible colormaps."""
     # adapted from https://matplotlib.org/stable/tutorials/colors/colormaps.html
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))

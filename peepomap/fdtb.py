@@ -1,4 +1,4 @@
-"""ONS CMAP."""
+"""FDTB CMAP."""
 
 from matplotlib.colors import LinearSegmentedColormap
 

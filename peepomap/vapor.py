@@ -1,4 +1,4 @@
-"""Tok CMAP."""
+"""Vapor CMAP."""
 
 from matplotlib.colors import LinearSegmentedColormap
 

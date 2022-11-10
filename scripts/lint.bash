@@ -3,7 +3,7 @@
 set -e
 set -x
 
-mypy peepomap --enable-incomplete-features
+mypy peepomap
 flake8 peepomap tests
 black peepomap tests --check
 pydocstyle peepomap
