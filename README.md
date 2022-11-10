@@ -1,29 +1,39 @@
-# Pepomap
+# ![PeepoPing_48x48](https://user-images.githubusercontent.com/12076399/201158312-96136d13-5a86-4aba-8a16-7cfc978b16dc.png) Peepomap
 
-Just some extra Matplotlib colormaps.
+Just some extra Peepo-Powered Matplotlib colormaps.
 
-## Installation
+## 📦 Installation
 
 ```bash
-pip install pepomap
+pip install peepomap
 ```
 
-## Colormaps
+## 🎨 Colormaps
 
 ```python
-import pepomap
+import peepomap
 
-pepomap.tools.display_colormaps(pepomap.cmaps)
+peepomap.tools.display_colormaps(pepomap.cmaps)
 ```
 
-![pepomap_colormaps_darkbg](https://user-images.githubusercontent.com/12076399/143933964-18e03db4-890a-4756-b19f-9aba327532b5.png#gh-dark-mode-only)
+![pepomap_colormaps_darkbg](samples/pepomap_colormaps_darkbg.png#gh-dark-mode-only)
 
-![pepomap_colormaps_lightbg](https://user-images.githubusercontent.com/12076399/143933201-f2a61bfa-2f34-4b3b-a5d2-c3a100061279.png#gh-light-mode-only)
+![pepomap_colormaps_lightbg](samples/pepomap_colormaps_lightbg.png#gh-light-mode-only)
 
-## How to use
+## 💻 How to use
+
+Simple import and choose a colormap from the above list by it`s name.
 
 ```python
-import pepomap
+import peepomap
 
-cmap = pepomap.cmaps["storm"]
+cmap = peepomap.cmaps["storm"]
+```
+
+## 🏗️ Development
+
+Create the virtual env using [Poetry](https://github.com/python-poetry/poetry):
+
+```bash
+poetry install
 ```
