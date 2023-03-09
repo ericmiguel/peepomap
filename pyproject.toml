@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "peepomap"
-version = "0.1.1"
-description = ""
+version = "0.1.2"
+description = "Just some extra Peepo-Powered Matplotlib colormaps."
 authors = ["ericmiguel <ericmiguel@id.uff.br>"]
 keywords = ["matplotlib", "colormaps"]
 readme = "README.md"
@@ -20,7 +20,7 @@ module = ["matplotlib.*"]
 ignore_missing_imports = true
 
 [tool.poetry.dependencies]
-python = ">=3.8.0,<3.11"
+python = ">=3.8.0,<3.12"
 matplotlib = "^3.5.0"
 numpy = "^1.21.4"
 
