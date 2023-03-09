@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "peepomap"
-version = "0.1.1"
-description = ""
+version = "0.1.2"
+description = "Just some extra Peepo-Powered Matplotlib colormaps."
 authors = ["ericmiguel <ericmiguel@id.uff.br>"]
 keywords = ["matplotlib", "colormaps"]
 readme = "README.md"
