@@ -1,49 +1,60 @@
-name: Push
+name: CI
+
 on:
   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
   push:
     branches:
       - main
+      - v020
     paths-ignore:
       - .gitignore
       - .github/**
-      - .pre-commit-config.yaml
       - README.md
-      - requirements.txt
-      - requirements.bash
-      - poetry.lock
+      - CLAUDE.md
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  code-quality:
+  lint-and-test:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        poetry-version: [1.6.0]
+        python-version: ["3.12", "3.13", "3.14"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Run image
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: ${{ matrix.poetry-version }}
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
       - name: Install dependencies
-        run: poetry install
-      - name: Run black
-        run: poetry run black peepomap --check
-      - name: Run isort
-        run: poetry run isort peepomap --check-only
-      - name: Run flake8
-        run: poetry run flake8 peepomap
-      - name: Run Pydocstyle
-        run: poetry run pydocstyle peepomap
-      - name: Run Mypy
-        run: poetry run mypy peepomap --enable-incomplete-features
+        run: uv sync --all-extras
+
+      - name: Run ruff format check
+        run: uv run ruff format --check src
+
+      - name: Run ruff linter
+        run: uv run ruff check src
+
+      - name: Run pyright
+        run: uv run pyright src
+
+      - name: Run tests with coverage
+        run: uv run pytest tests/ -v --cov=src/peepomap --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false

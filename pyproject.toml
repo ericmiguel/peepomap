@@ -1,74 +1,226 @@
-[tool.poetry]
+[project]
 name = "peepomap"
-version = "0.1.2"
-description = "Just some extra Peepo-Powered Matplotlib colormaps."
-authors = ["ericmiguel <ericmiguel@id.uff.br>"]
-keywords = ["matplotlib", "colormaps"]
+version = "0.2.0"
+description = "Just some extra Peepo-Powered Matplotlib colormaps and tools."
 readme = "README.md"
-license = "MIT"
-repository = "https://github.com/ericmiguel/peepomap"
-
-[tool.mypy]
-check_untyped_defs = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-show_error_codes = true
-warn_return_any = true
-
-[[tool.mypy.overrides]]
-module = ["matplotlib.*"]
-ignore_missing_imports = true
-
-[tool.poetry.dependencies]
-python = ">=3.8.0,<3.12"
-matplotlib = "^3.5.0"
-numpy = "^1.21.4"
-
-[tool.poetry.group.dev.dependencies]
-flake8-pyproject = "^1.1.0.post0"
-isort = "^5.8.0"
-black = "^22.9.0"
-pydocstyle = "^6.1.1"
-pre-commit = "^2.13.0"
-autoflake = "^1.7.7"
-mypy = "^0.990"
-
-[tool.isort]
-profile = "black"
-force_single_line = true
-atomic = true
-include_trailing_comma = true
-lines_after_imports = 2
-lines_between_types = 1
-use_parentheses = true
-src_paths = ["poetry", "tests"]
-filter_files = true
-known_first_party = "poetry"
-
-[tool.flake8]
-max-line-length = 88
-max-complexity = 10
-exclude = [
-    ".venv",
-    ".git",
-    "__pycache__",
-    "*.egg-info",
-    ".pytest_cache",
-    ".mypy_cache"
+license = { text = "MIT" }
+authors = [
+    { name = "Eric Miguel", email = "eric.mrib@gmail.com" }
 ]
-ignore = [  # alertas e erros por conta do black
-    "E501", # linha longa
-    "E203", # espaço antes de ':'
-    "E225", # sem espaço ao redor de operadores 
-    "W503", # quebra de linha antes de um operador binário
-    "W504"  # quebra de linha após um operador binário line
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Typing :: Typed",
+]
+keywords = ["matplotlib", "colormap", "visualization", "cartopy", "scientific computing"]
+
+dependencies = [
+    "matplotlib>=3.8.0",
+    "numpy>=1.26.0",
 ]
 
-[tool.pydocstyle]
-convention = "numpy"
-add-ignore = "D100,D203"
-match = '(?!tests).*\.py'
+[project.optional-dependencies]
+dev = [
+    "pyright>=1.1.405",
+    "ruff>=0.13.1",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/opteric/peepomap"
+Repository = "https://github.com/opteric/peepomap"
+Issues = "https://github.com/opteric/peepomap/issues"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/peepomap"]
+
+[tool.ruff]
+# Enable preview features (e.g., docstring code formatting)
+preview = true
+
+# Enable automatic fixes by default when running ruff
+# Can be overridden with --fix or --no-fix command-line flags
+# Only applies safe fixes unless --unsafe-fixes is provided
+fix = true
+include = ["pyproject.toml", "src/**/*.py", "*.py"]
+extend-include = ["*.ipynb"]
+
+respect-gitignore = true
+show-fixes = true
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Target Python version for Ruff compatibility
+target-version = "py312"
+
+[tool.ruff.lint]
+# Allow removing unused imports in __init__ files
+extend-safe-fixes = ["F401"]
+
+# Enable comprehensive linting rules:
+# - Pyflakes (F): Basic Python errors
+# - pycodestyle (E, W): PEP 8 style violations  
+# - McCabe complexity (C901): Cyclomatic complexity
+# - flake8-bugbear (B): Common bug patterns
+# - pydocstyle (D): Docstring conventions
+# - isort (I001): Import sorting
+# - pyupgrade (UP): Dependency updates
+# - pydoclint (DOC): Docstring content issues
+# - refurber (FURB): Code quality improvements
+# - pylint errors (PLE): Error detection
+# - pygrep-hooks (PGH): Custom regex checks
+# - tryceratops (TRY): exception Handling AntiPatterns in Python
+# - ruff (RUF): Ruff-specific checks
+# - pep8-naming (N): Naming conventions
+# - perflint (PERF): Performance issues
+select = [
+    "F",
+    "E",
+    "W",
+    "C901",
+    "B",
+    "D",
+    "I001",
+    "UP",
+    "DOC",
+    "FURB",
+    "PLE",
+    "PGH",
+    "TRY",
+    "RUF",
+    "N",
+    "PERF"
+]
+
+# Allow automatic fixing for all enabled rules when --fix is provided
+fixable = ["ALL"]
+
+# Do not automatically fix these rule categories (currently none)
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings
+# Supports Markdown, reStructuredText code blocks, and doctests
+docstring-code-format = true
+
+# Use dynamic line length for code snippets in docstrings
+# Adapts to the surrounding docstring indentation
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.pydoclint]
+# Skip docstrings which fit on a single line.
+ignore-one-line-docstrings = true
+
+[tool.ruff.lint.flake8-bugbear]
+# Allow default arguments for FastAPI dependency injection patterns
+# Note: These are included for future compatibility but not currently used in TreeMancer
+extend-immutable-calls = []
+
+[tool.ruff.lint.pydocstyle]
+# Use NumPy docstring convention (supports: "google", "numpy", or "pep257")
+convention = "numpy"
+
+[tool.ruff.lint.flake8-bandit]
+check-typed-exception = true
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "single"
+
+[tool.ruff.lint.isort]
+# Force each from-import to appear on its own line
+force-single-line = true
+
+# Sort imports by module name regardless of import style
+# (don't separate 'import sys' from 'from itertools import groupby')
+force-sort-within-sections = true
+
+# Add a single blank line after each import block
+lines-after-imports = 2
+
+# No blank lines between direct imports and from-imports
+lines-between-types = 0
+
+[tool.ruff.lint.per-file-ignores]
+# Disable docstring requirements for test files and directories
+"tests/**" = ["D", "TRY", "RUF", "N", "DOC402", "B903"]
+# Allow lazy imports for optional matplotlib integration
+# Allow complexity warnings for colormap manipulation algorithms
+"src/peepomap/tools.py" = ["C901", "DOC501", "TRY003", "FURB113"]
+"src/peepomap/colormaps.py" = ["PLC0415", "E501", "B904"]
+
+
+[tool.pyright]
+# Python version for type checking (matches requires-python)
+pythonVersion = "3.12"
+# Use strict type checking for better code quality
+typeCheckingMode = "strict"
+# Include source code for type checking
+include = ["src"]
+# Exclude cache directories from type checking
+exclude = ["**/__pycache__"]
+
+[tool.pytest.ini_options]
+# Directory containing test files
+testpaths = ["tests"]
+# Add src directory to Python path for imports
+pythonpath = ["src"]
