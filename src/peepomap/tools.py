@@ -313,7 +313,7 @@ def hex_to_decimal_rgb(colors: list[str]) -> list[list[float]]:
 
 
 def shift(
-    name: str,
+    name: str | LinearSegmentedColormap,
     start: float = 0.0,
     n: int = 256,
     *,
@@ -323,8 +323,8 @@ def shift(
 
     Parameters
     ----------
-    name : str
-        Colormap name
+    name : str or LinearSegmentedColormap
+        Colormap name or object
     start : float, default=0.0
         New starting position (0.0 to 1.0)
     n : int, default=256
@@ -346,15 +346,22 @@ def shift(
     --------
     >>> cmap = peepomap.shift("vapor", start=0.5)
     >>> cmap = peepomap.shift("hsv", start=0.25, cmap_name="HSV Rotated")
+    >>> cmap = peepomap.shift(peepomap.get("vapor"), start=0.5)
     """
     if not 0.0 <= start <= 1.0:
         msg = f"start must be between 0 and 1, got {start}"
         raise ValueError(msg)
 
-    cmap = get(name)
+    if isinstance(name, str):
+        cmap = get(name)
+        original_name = name
+    else:
+        # It's already a colormap object
+        cmap = name
+        original_name = getattr(name, "name", "custom")
 
     if cmap_name is None:
-        shifted_name = f"{name}_shifted_{start:.2f}"
+        shifted_name = f"{original_name}_shifted_{start:.2f}"
     else:
         shifted_name = cmap_name
 
