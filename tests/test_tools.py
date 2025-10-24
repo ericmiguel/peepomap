@@ -56,6 +56,12 @@ class TestTruncate:
         cmap = peepomap.truncate("storm", 0.25, 0.75)
         assert isinstance(cmap, LinearSegmentedColormap)
 
+    def test_truncate_by_object(self):
+        """Test truncating a colormap object."""
+        original = peepomap.get("storm")
+        truncated = peepomap.truncate(original, 0.25, 0.75)
+        assert isinstance(truncated, LinearSegmentedColormap)
+
     def test_truncate_with_custom_name(self):
         """Test truncation with custom name."""
         cmap = peepomap.truncate("storm", 0.0, 0.5, cmap_name="Half Storm")
@@ -128,6 +134,12 @@ class TestShift:
         cmap = peepomap.shift("vapor", start=0.5)
         assert isinstance(cmap, LinearSegmentedColormap)
 
+    def test_shift_by_object(self):
+        """Test shifting a colormap object."""
+        original = peepomap.get("vapor")
+        shifted = peepomap.shift(original, start=0.5)
+        assert isinstance(shifted, LinearSegmentedColormap)
+
     def test_shift_with_name(self):
         """Test shifting with custom name."""
         cmap = peepomap.shift("vapor", start=0.25, cmap_name="Vapor Shifted")
@@ -146,6 +158,12 @@ class TestAdjust:
         """Test adjusting saturation."""
         cmap = peepomap.adjust("storm", saturation=1.5)
         assert isinstance(cmap, LinearSegmentedColormap)
+
+    def test_adjust_by_object(self):
+        """Test adjusting a colormap object."""
+        original = peepomap.get("storm")
+        adjusted = peepomap.adjust(original, saturation=1.5)
+        assert isinstance(adjusted, LinearSegmentedColormap)
 
     def test_adjust_lightness(self):
         """Test adjusting lightness."""
