@@ -74,7 +74,7 @@ def plot_create_diverging_demo() -> None:
     """Generate create_diverging demo image for README."""
     cool_warm = peepomap.create_diverging("Blues_r", "Reds", name="Cool Warm")
     rdylbl = peepomap.create_diverging(
-        "Reds_r", "Blues", center="yellow", diffusion=0.3, name="RdYlBl"
+        "Reds_r", "Blues", center="yellow", blend=0.3, name="RdYlBl"
     )
 
     save_demo_images("create_diverging_demo", [cool_warm, rdylbl])
@@ -82,9 +82,9 @@ def plot_create_diverging_demo() -> None:
 
 def plot_create_concat_demo() -> None:
     """Generate concat demo images for README."""
-    div1 = peepomap.create_diverging("Blues_r", "Reds", diffusion=0.3, name="div1")
-    div2 = peepomap.create_diverging("Purples_r", "Oranges", diffusion=0.3, name="div2")
-    combined = peepomap.concat(div1, div2, diffusion=0.5, n=512, name="Fusion")
+    div1 = peepomap.create_linear("blue", "red", name="div1")
+    div2 = peepomap.create_linear("purple", "orange", name="div2")
+    combined = peepomap.concat(div1, div2, blend=0.25, n=512, name="Fusion")
 
     save_demo_images("concat_demo", [div1, div2, combined])
 
@@ -93,7 +93,7 @@ def plot_create_concat_odd() -> None:
     """Generate odd concat demo images for README."""
     sunset = peepomap.create_linear("gold", "orangered", name="Sunset", reverse=True)
     tab20b = peepomap.get("tab20b")
-    odd = peepomap.concat(sunset, tab20b, diffusion=0.5, name="Odd1")
+    odd = peepomap.concat(sunset, tab20b, blend=0.25, name="Odd1")
 
     save_demo_images("concat_odd_demo", [sunset, tab20b, odd])
 
@@ -136,6 +136,33 @@ def plot_shift_demo() -> None:
     save_demo_images("shift_demo", [original, shift_25, shift_50, shift_75])
 
 
+def plot_complex_concat_demo() -> None:
+    """Generate complex concat demo images for README."""
+    greys = peepomap.create_linear("white", "grey", name="Greys")
+    greens = peepomap.create_linear("lightgreen", "green", name="Greens")
+    blues = peepomap.create_linear("lightblue", "darkblue", name="Blues")
+    goldens = peepomap.create_linear("lightyellow", "darkgoldenrod", name="Goldens")
+    reds = peepomap.create_linear("pink", "darkred", name="Reds")
+    pinks = peepomap.create_linear("lightpink", "darkmagenta", name="Pinks")
+    cyans = peepomap.create_linear("lightcyan", "darkcyan", name="Cyans")
+
+    tria = peepomap.concat(
+        greys,
+        greens,
+        blues,
+        goldens,
+        reds,
+        pinks,
+        cyans,
+        name="Tria",
+        blend=0.45,
+    )
+
+    save_demo_images(
+        "complex_concat_demo", [greys, greens, blues, goldens, reds, pinks, cyans, tria]
+    )
+
+
 if __name__ == "__main__":
     plot_colormaps_demo()
     plot_combine_demo()
@@ -146,3 +173,4 @@ if __name__ == "__main__":
     plot_adjust_demo()
     plot_truncate_demo()
     plot_shift_demo()
+    plot_complex_concat_demo()

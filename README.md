@@ -79,7 +79,7 @@ ocean_sunset = peepomap.create_linear("navy", "crimson", name="Ocean Sunset")
 
 ### Create Diverging Colormaps
 
-Build diverging colormaps with optional center colors and diffusion:
+Build diverging colormaps with optional center colors and blend:
 
 ```python
 import peepomap
@@ -87,9 +87,9 @@ import peepomap
 # Simple diverging colormap
 cool_warm = peepomap.create_diverging("Blues_r", "Reds", name="Cool Warm")
 
-# Diverging with custom center color and diffusion
+# Diverging with custom center color and blend
 rdylbl = peepomap.create_diverging(
-    "Reds_r", "Blues", center="yellow", diffusion=0.3, name="RdYlBl"
+    "Reds_r", "Blues", center="yellow", blend=0.3, name="RdYlBl"
 )
 ```
 
@@ -98,18 +98,33 @@ rdylbl = peepomap.create_diverging(
 
 ### Concatenate Colormaps
 
-Join multiple colormaps end-to-end with optional blending:
+Join multiple colormaps end-to-end with equal space allocation. Each colormap gets an equal portion of the color space:
 
 ```python
 import peepomap
 
-div1 = peepomap.create_diverging("Blues_r", "Reds", diffusion=0.3, name="div1")
-div2 = peepomap.create_diverging("Purples_r", "Oranges", diffusion=0.3, name="div2")
-combined = peepomap.concat(div1, div2, diffusion=0.5, n=512, name="Fusion")
+# Sharp boundaries (no blending)
+cmap = peepomap.concat("viridis", "plasma", "inferno")
+
+# Smooth blending between colormaps (10% of space for transitions)
+cmap = peepomap.concat("viridis", "plasma", blend=0.1)
+
+# Custom blend zone size (20% of total)
+cmap = peepomap.concat("viridis", "plasma", blend=0.2)
 ```
 
-![concat_demo_dark](https://raw.githubusercontent.com/ericmiguel/peepomap/refs/heads/main/static/concat_demo_dark.png#gh-dark-mode-only)
-![concat_demo_light](https://raw.githubusercontent.com/ericmiguel/peepomap/refs/heads/main/static/concat_demo_light.png#gh-light-mode-only)
+You can also concatenate custom colormaps:
+
+```python
+import peepomap
+
+div1 = peepomap.create_linear("blue", "red", name="div1")
+div2 = peepomap.create_linear("purple", "orange", name="div2")
+combined = peepomap.concat(div1, div2, blend=0.25, n=512, name="Fusion")
+```
+
+![concat_demo_dark](https://raw.githubusercontent.com/ericmiguel/peepomap/main/static/concat_demo_dark.png#gh-dark-mode-only)
+![concat_demo_light](https://raw.githubusercontent.com/ericmiguel/peepomap/main/static/concat_demo_light.png#gh-light-mode-only)
 
 You can even concatenate very different types of colormaps:
 
@@ -118,11 +133,34 @@ import peepomap
 
 sunset = peepomap.create_linear("gold", "orangered", name="Sunset", reverse=True)
 tab20b = peepomap.get("tab20b")
-odd = peepomap.concat(sunset, tab20b, diffusion=0.5, name="Odd1")
+odd = peepomap.concat(sunset, tab20b, blend=0.25, name="Odd1")
 ```
 
-![concat_odd_demo_dark](https://raw.githubusercontent.com/ericmiguel/peepomap/refs/heads/main/static/concat_odd_demo_dark.png#gh-dark-mode-only)
-![concat_odd_demo_light](https://raw.githubusercontent.com/ericmiguel/peepomap/refs/heads/main/static/concat_odd_demo_light.png#gh-light-mode-only)
+![concat_odd_demo_dark](https://raw.githubusercontent.com/ericmiguel/peepomap/main/static/concat_odd_demo_dark.png#gh-dark-mode-only)
+![concat_odd_demo_light](https://raw.githubusercontent.com/ericmiguel/peepomap/main/static/concat_odd_demo_light.png#gh-light-mode-only)
+
+For more complex visualizations, you can concatenate many colormaps at once:
+
+```python
+import peepomap
+
+greys = peepomap.create_linear("white", "grey", name="Greys")
+greens = peepomap.create_linear("lightgreen", "green", name="Greens")
+blues = peepomap.create_linear("lightblue", "darkblue", name="Blues")
+goldens = peepomap.create_linear("lightyellow", "darkgoldenrod", name="Goldens")
+reds = peepomap.create_linear("pink", "darkred", name="Reds")
+pinks = peepomap.create_linear("lightpink", "darkmagenta", name="Pinks")
+cyans = peepomap.create_linear("lightcyan", "darkcyan", name="Cyans")
+
+tria = peepomap.concat(
+    greys, greens, blues, goldens, reds, pinks, cyans,
+    name="Tria",
+    blend=0.45,
+)
+```
+
+![complex_concat_demo_dark](https://raw.githubusercontent.com/ericmiguel/peepomap/main/static/complex_concat_demo_dark.png#gh-dark-mode-only)
+![complex_concat_demo_light](https://raw.githubusercontent.com/ericmiguel/peepomap/main/static/complex_concat_demo_light.png#gh-light-mode-only)
 
 ### Adjust Colormaps
 
@@ -187,6 +225,55 @@ shift_25 = peepomap.shift(hsv, start=0.25, cmap_name="HSV Shift 0.25")
 
 ![shift_demo_dark](https://raw.githubusercontent.com/ericmiguel/peepomap/refs/heads/main/static/shift_demo_dark.png#gh-dark-mode-only)
 ![shift_demo_light](https://raw.githubusercontent.com/ericmiguel/peepomap/refs/heads/main/static/shift_demo_light.png#gh-light-mode-only)
+
+### Export Colormaps
+
+Export custom colormaps as `ColormapInfo` objects for persistence or sharing:
+
+```python
+import peepomap
+
+# Create a custom colormap
+custom = peepomap.concat("viridis", "plasma", blend=0.1)
+
+# Export as ColormapInfo object
+info = peepomap.export(
+    custom,
+    n=32,
+    name="viridis_plasma",
+    cmap_type="sequential",
+    description="Viridis blended with plasma"
+)
+
+# Access the colormap data
+print(info.name)        # "viridis_plasma"
+print(info.colors)      # List of RGB color values
+print(info.cmap_type)   # "sequential"
+
+# Save Python code representation to file
+peepomap.export(
+    custom,
+    name="viridis_plasma",
+    cmap_type="sequential",
+    description="Viridis blended with plasma",
+    output_file="my_colormap.py"
+)
+```
+
+The `output_file` parameter generates Python code ready to paste into your colormap registry:
+
+```python
+"viridis_plasma": ColormapInfo(
+    name="viridis_plasma",
+    colors=[
+        [0.267004, 0.004874, 0.329415],
+        [0.282623, 0.140926, 0.457517],
+        # ... more colors ...
+    ],
+    cmap_type="sequential",
+    description="Viridis blended with plasma",
+),
+```
 
 ## 🏗️ Development
 
