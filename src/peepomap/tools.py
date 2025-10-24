@@ -379,7 +379,7 @@ def shift(
 
 
 def adjust(
-    name: str,
+    name: str | LinearSegmentedColormap,
     *,
     red_boost: float = 0.0,
     green_boost: float = 0.0,
@@ -393,8 +393,8 @@ def adjust(
 
     Parameters
     ----------
-    name : str
-        Colormap name
+    name : str or LinearSegmentedColormap
+        Colormap name or object
     red_boost : float, default=0.0
         Red channel adjustment (-1.0 to 1.0)
     green_boost : float, default=0.0
@@ -426,6 +426,7 @@ def adjust(
     >>> cmap = peepomap.adjust(
     ...     "storm", blue_boost=0.2, lightness=0.8, cmap_name="Storm Adjusted"
     ... )
+    >>> cmap = peepomap.adjust(peepomap.get("storm"), saturation=1.5)
     """
     # Validate inputs
     for boost, name_str in [
@@ -445,10 +446,16 @@ def adjust(
         msg = f"lightness must be >= 0, got {lightness}"
         raise ValueError(msg)
 
-    cmap = get(name)
+    if isinstance(name, str):
+        cmap = get(name)
+        original_name = name
+    else:
+        # It's already a colormap object
+        cmap = name
+        original_name = getattr(name, "name", "custom")
 
     if cmap_name is None:
-        adjusted_name = f"{name}_adjusted"
+        adjusted_name = f"{original_name}_adjusted"
     else:
         adjusted_name = cmap_name
 
