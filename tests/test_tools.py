@@ -199,9 +199,9 @@ class TestCreateDiverging:
         cmap = peepomap.create_diverging("Blues_r", "Reds", center="white")
         assert isinstance(cmap, LinearSegmentedColormap)
 
-    def test_create_diverging_with_diffusion(self):
-        """Test creating diverging colormap with diffusion."""
-        cmap = peepomap.create_diverging("Blues_r", "Reds", diffusion=0.5)
+    def test_create_diverging_with_blend(self):
+        """Test creating diverging colormap with blend."""
+        cmap = peepomap.create_diverging("Blues_r", "Reds", blend=0.5)
         assert isinstance(cmap, LinearSegmentedColormap)
 
     def test_create_diverging_with_name(self):

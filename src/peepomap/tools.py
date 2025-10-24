@@ -492,7 +492,7 @@ def create_diverging(
     right: str | LinearSegmentedColormap,
     center: str | tuple[float, float, float, float] | None = None,
     n: int = 256,
-    diffusion: float = 1.0,
+    blend: float = 1.0,
     reverse: bool = False,
     name: str | None = None,
 ) -> LinearSegmentedColormap:
@@ -510,8 +510,8 @@ def create_diverging(
         Center color (auto-interpolated if None)
     n : int, default=256
         Number of colors
-    diffusion : float, default=1.0
-        Center transition smoothness
+    blend : float, default=1.0
+        Center transition smoothness (0.0 = sharp, 1.0 = smooth, >1.0 = very smooth)
     reverse : bool, default=False
         Reverse the result
     name : str | None, optional
@@ -526,10 +526,11 @@ def create_diverging(
     --------
     >>> cmap = peepomap.create_diverging("jazz", "storm")
     >>> cmap = peepomap.create_diverging("jazz", "storm", center="white")
+    >>> cmap = peepomap.create_diverging("Blues_r", "Reds", blend=0.5)
     """
-    # Validate diffusion parameter
-    if np.isnan(diffusion):
-        msg = f"diffusion must be a finite number, got {diffusion}"
+    # Validate blend parameter
+    if np.isnan(blend):
+        msg = f"blend must be a finite number, got {blend}"
         raise ValueError(msg)
 
     # Get the two colormaps - handle both strings and colormap objects
@@ -568,45 +569,45 @@ def create_diverging(
     n_half = n // 2
 
     # Left half: sample the full range of the negative colormap
-    # and apply center diffusion
+    # and apply center blend
     x_left = np.linspace(0, 1, n_half)
     colors_left_base = cmap_n(x_left)
     colors_left = np.zeros((n_half, 4))
 
     for i in range(n_half):
-        # Diffusion weight: 0 at far left, increasing towards center
+        # Blend weight: 0 at far left, increasing towards center
         raw_weight = i / (n_half - 1) if n_half > 1 else 0
 
-        # Apply diffusion control
-        if diffusion == 0.0:
+        # Apply blend control
+        if blend == 0.0:
             weight = 0.0  # No center influence
-        elif diffusion > 0.0:
-            weight = raw_weight ** (1.0 / diffusion)
+        elif blend > 0.0:
+            weight = raw_weight ** (1.0 / blend)
         else:
-            # Negative diffusion: reverse the effect
-            weight = 1.0 - (1.0 - raw_weight) ** (1.0 / abs(diffusion))
+            # Negative blend: reverse the effect
+            weight = 1.0 - (1.0 - raw_weight) ** (1.0 / abs(blend))
 
         weight = np.clip(weight, 0.0, 1.0)
         colors_left[i] = (1 - weight) * colors_left_base[i] + weight * center_rgba
 
     # Right half: sample the full range of the positive colormap
-    # and apply center diffusion
+    # and apply center blend
     x_right = np.linspace(0, 1, n_half)
     colors_right_base = cmap_p(x_right)
     colors_right = np.zeros((n_half, 4))
 
     for i in range(n_half):
-        # Diffusion weight: 1 near center, decreasing towards far right
+        # Blend weight: 1 near center, decreasing towards far right
         raw_weight = (n_half - 1 - i) / (n_half - 1) if n_half > 1 else 0
 
-        # Apply diffusion control
-        if diffusion == 0.0:
+        # Apply blend control
+        if blend == 0.0:
             weight = 0.0  # No center influence
-        elif diffusion > 0.0:
-            weight = raw_weight ** (1.0 / diffusion)
+        elif blend > 0.0:
+            weight = raw_weight ** (1.0 / blend)
         else:
-            # Negative diffusion: reverse the effect
-            weight = 1.0 - (1.0 - raw_weight) ** (1.0 / abs(diffusion))
+            # Negative blend: reverse the effect
+            weight = 1.0 - (1.0 - raw_weight) ** (1.0 / abs(blend))
 
         weight = np.clip(weight, 0.0, 1.0)
         colors_right[i] = (1 - weight) * colors_right_base[i] + weight * center_rgba
