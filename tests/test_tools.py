@@ -214,24 +214,55 @@ class TestConcat:
     """Test colormap concatenation."""
 
     def test_concat_two_colormaps(self):
-        """Test concatenating two colormaps."""
+        """Test concatenating two colormaps without blending."""
         cmap = peepomap.concat("viridis", "plasma")
         assert isinstance(cmap, LinearSegmentedColormap)
 
     def test_concat_three_colormaps(self):
-        """Test concatenating three colormaps."""
+        """Test concatenating three colormaps without blending."""
         cmap = peepomap.concat("viridis", "plasma", "inferno")
         assert isinstance(cmap, LinearSegmentedColormap)
 
-    def test_concat_with_diffusion(self):
-        """Test concatenating with diffusion."""
-        cmap = peepomap.concat("viridis", "plasma", diffusion=0.5)
+    def test_concat_with_blend(self):
+        """Test concatenating with blending enabled."""
+        cmap = peepomap.concat("viridis", "plasma", blend=0.1)
+        assert isinstance(cmap, LinearSegmentedColormap)
+
+    def test_concat_with_custom_blend(self):
+        """Test concatenating with custom blend fraction."""
+        cmap = peepomap.concat("viridis", "plasma", blend=0.2)
+        assert isinstance(cmap, LinearSegmentedColormap)
+
+    def test_concat_with_objects(self):
+        """Test concatenating colormap objects."""
+        viridis = peepomap.get("viridis")
+        plasma = peepomap.get("plasma")
+        cmap = peepomap.concat(viridis, plasma)
         assert isinstance(cmap, LinearSegmentedColormap)
 
     def test_concat_insufficient_colormaps(self):
         """Test that concatenating less than 2 colormaps raises error."""
         with pytest.raises(ValueError):
             peepomap.concat("viridis")
+
+    def test_concat_invalid_blend(self):
+        """Test that invalid blend value raises ValueError."""
+        with pytest.raises(ValueError):
+            peepomap.concat("viridis", "plasma", blend=0.6)
+        with pytest.raises(ValueError):
+            peepomap.concat("viridis", "plasma", blend=-0.1)
+
+    def test_concat_many_colormaps_with_blend(self):
+        """Test concatenating many colormaps with large blend fraction."""
+        # This should handle the case where blend space might exceed total space
+        cmap = peepomap.concat(
+            "Greys", "Greens", "Blues", "Reds", "Purples", "Oranges",
+            blend=0.2, n=1024
+        )
+        assert isinstance(cmap, LinearSegmentedColormap)
+        # Verify it doesn't crash with many colormaps and high blend fraction
+        colors = cmap(np.linspace(0, 1, 100))
+        assert colors.shape == (100, 4)  # 100 colors with RGBA
 
 
 class TestSetSpecialColors:

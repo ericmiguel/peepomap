@@ -639,9 +639,8 @@ def create_diverging(
 
 def concat(
     *colormaps: str | LinearSegmentedColormap,
-    center: str | None = None,
+    blend: float | None = None,
     n: int = 256,
-    diffusion: float = 1.0,
     reverse: bool = False,
     name: str | None = None,
 ) -> LinearSegmentedColormap:
@@ -653,12 +652,16 @@ def concat(
     ----------
     *colormaps : str or LinearSegmentedColormap
         Colormap names or objects (minimum 2)
-    center : str or None, default=None
-        Transition color (auto-interpolated if None)
+    blend : float or None, default=None
+        Blend fraction for smooth transitions (0.0-0.5).
+        If None or 0.0, concatenate with sharp boundaries.
+        If > 0.0, create smooth transitions using this fraction of total space,
+        divided equally among all transitions.
+        For example, blend=0.1 means 10% of total colors used for blending,
+        split across all transitions (e.g., 2 maps = 10% for 1 transition,
+        3 maps = 5% per transition for 2 transitions).
     n : int, default=256
         Number of colors
-    diffusion : float, default=1.0
-        Transition smoothness
     reverse : bool, default=False
         Reverse the result
     name : str | None, optional
@@ -669,13 +672,27 @@ def concat(
     LinearSegmentedColormap
         Concatenated colormap
 
+    Raises
+    ------
+    ValueError
+        If less than 2 colormaps provided or blend out of range
+
     Examples
     --------
+    >>> # Sharp boundaries (no blending)
     >>> cmap = peepomap.concat("viridis", "plasma")
     >>> cmap = peepomap.concat("blues", "reds", "greens")
+
+    >>> # With smooth blending (10% of space)
+    >>> cmap = peepomap.concat("viridis", "plasma", blend=0.1)
+    >>> cmap = peepomap.concat("blues", "reds", blend=0.2)
     """
     if len(colormaps) < 2:
         raise ValueError("At least 2 colormaps are required")
+
+    if blend is not None and not 0.0 <= blend <= 0.5:
+        msg = f"blend must be between 0.0 and 0.5, got {blend}"
+        raise ValueError(msg)
 
     # Get colormap objects and names
     cmap_objects: list[LinearSegmentedColormap] = []
@@ -690,92 +707,18 @@ def concat(
             cmap_objects.append(cmap)
             cmap_names.append(getattr(cmap, "name", "custom"))
 
-    # Determine center color
-    if center is None:
-        # Automatic interpolation: get mean of all colormap endpoint colors
-        endpoint_colors: list[tuple[float, float, float, float]] = []
-        for cmap_obj in cmap_objects:
-            # Get both endpoints (start and end) of each colormap
-            endpoint_colors.append(cmap_obj(0.0))  # Start
-            endpoint_colors.append(cmap_obj(1.0))  # End
-
-        # Calculate mean color from all endpoints
-        center_rgba = np.mean(endpoint_colors, axis=0)
-    else:
-        # Manual center color
-        center_rgba = np.array(mcolors.to_rgba(center))
-
-    # Calculate space allocation
     n_maps = len(cmap_objects)
 
-    if n_maps == 2:
-        # For 2 colormaps, behave like create_diverging with proper center segment
-        n_half = (n - 1) // 2  # Reserve 1 color for center
-
-        # Left half
-        left_cmap = cmap_objects[0]
-        x_left = np.linspace(0, 1, n_half)
-        colors_left_base = left_cmap(x_left)
-        colors_left = np.zeros((n_half, 4))
-
-        # Apply diffusion from center
-        for i in range(n_half):
-            # Diffusion weight: 0 at far left, increasing towards center
-            raw_weight = i / (n_half - 1) if n_half > 1 else 0
-
-            if diffusion == 0.0:
-                weight = 0.0
-            elif diffusion > 0.0:
-                weight = raw_weight ** (1.0 / diffusion)
-            else:
-                weight = 1.0 - (1.0 - raw_weight) ** (1.0 / abs(diffusion))
-
-            weight = np.clip(weight, 0.0, 1.0)
-            colors_left[i] = (1 - weight) * colors_left_base[i] + weight * center_rgba
-
-        # Right half
-        right_cmap = cmap_objects[1]
-        x_right = np.linspace(0, 1, n_half)
-        colors_right_base = right_cmap(x_right)
-        colors_right = np.zeros((n_half, 4))
-
-        for i in range(n_half):
-            # Diffusion weight: high near center, decreasing towards far right
-            raw_weight = (n_half - 1 - i) / (n_half - 1) if n_half > 1 else 0
-
-            if diffusion == 0.0:
-                weight = 0.0
-            elif diffusion > 0.0:
-                weight = raw_weight ** (1.0 / diffusion)
-            else:
-                weight = 1.0 - (1.0 - raw_weight) ** (1.0 / abs(diffusion))
-
-            weight = np.clip(weight, 0.0, 1.0)
-            colors_right[i] = (1 - weight) * colors_right_base[i] + weight * center_rgba
-
-        # Combine: left + center + right
-        final_colors = np.vstack([colors_left, [center_rgba], colors_right])
-
-    else:
-        # For 3+ colormaps, create dedicated center segments between each pair
-        # Calculate space per segment including center transitions
-        n_segments = n_maps
-        n_transitions = n_maps - 1  # Number of center transition areas
-
-        # Reserve space for center transitions (10% of total for each transition)
-        center_space_per_transition = max(1, n // (10 * n_transitions))
-        total_center_space = center_space_per_transition * n_transitions
-
-        # Remaining space for colormap segments
-        remaining_space = n - total_center_space
-        colors_per_segment = remaining_space // n_segments
-        remainder = remaining_space % n_segments
+    if blend is None or blend == 0.0:
+        # Simple concatenation: equal space for each colormap
+        colors_per_map = n // n_maps
+        remainder = n % n_maps
 
         all_colors: list[np.ndarray] = []
 
         for i, cmap_obj in enumerate(cmap_objects):
             # Calculate segment size
-            segment_size = colors_per_segment + (1 if i < remainder else 0)
+            segment_size = colors_per_map + (1 if i < remainder else 0)
             segment_size = max(1, segment_size)  # Ensure at least 1 color
 
             # Sample the colormap
@@ -783,13 +726,70 @@ def concat(
             colors_segment = cmap_obj(x_segment)
             all_colors.append(colors_segment)
 
-            # Add center transition (except after last segment)
+        # Combine all segments
+        final_colors = np.vstack(all_colors)
+
+    else:
+        # Blended concatenation: create smooth transitions between colormaps
+        n_transitions = n_maps - 1
+
+        # Calculate blend zone size per transition
+        # blend represents the TOTAL fraction of space for ALL transitions
+        # Ensure we have enough space for all colormaps and blends
+        # Reserve at least 2 colors per colormap
+        max_blend_space = n - (n_maps * 2)  # Reserve minimum 2 colors per map
+
+        # Calculate total blend space requested as fraction of n
+        total_blend_requested = int(n * blend)
+
+        # Divide by number of transitions to get size per transition
+        if n_transitions > 0:
+            blend_zone_size_requested = total_blend_requested // n_transitions
+        else:
+            blend_zone_size_requested = 0
+        blend_zone_size_requested = max(2, blend_zone_size_requested)
+
+        # Cap at available space
+        if n_transitions > 0:
+            max_allowed_blend_size = max_blend_space // n_transitions
+        else:
+            max_allowed_blend_size = 0
+        blend_zone_size = min(blend_zone_size_requested, max_allowed_blend_size)
+        blend_zone_size = max(1, blend_zone_size)  # Ensure at least 1
+
+        # Total space for blend zones
+        total_blend_space = blend_zone_size * n_transitions
+
+        # Remaining space for colormap segments
+        remaining_space = n - total_blend_space
+        colors_per_map = remaining_space // n_maps
+        remainder = remaining_space % n_maps
+
+        all_colors: list[np.ndarray] = []
+
+        for i, cmap_obj in enumerate(cmap_objects):
+            # Calculate segment size
+            segment_size = colors_per_map + (1 if i < remainder else 0)
+            segment_size = max(1, segment_size)
+
+            # Sample the colormap
+            x_segment = np.linspace(0, 1, segment_size)
+            colors_segment = cmap_obj(x_segment)
+            all_colors.append(colors_segment)
+
+            # Add blend transition (except after last segment)
             if i < n_maps - 1:
-                # Create smooth transition using center color
-                transition_colors = np.tile(
-                    center_rgba, (center_space_per_transition, 1)
-                )
-                all_colors.append(transition_colors)
+                # Get the end color of current colormap and start color of next
+                end_color = np.array(cmap_objects[i](1.0))
+                start_color = np.array(cmap_objects[i + 1](0.0))
+
+                # Create linear interpolation between the two colors
+                blend_colors = np.zeros((blend_zone_size, 4))
+                for j in range(blend_zone_size):
+                    weight = j / (blend_zone_size - 1) if blend_zone_size > 1 else 0.5
+                    blend_colors[j] = (1 - weight) * end_color + weight * start_color
+
+                all_colors.append(blend_colors)
 
         # Combine all segments
         final_colors = np.vstack(all_colors)
@@ -798,14 +798,14 @@ def concat(
     if name is not None:
         combined_name = name
     else:
-        combined_name = "_".join(cmap_names) + "_spatial"
+        combined_name = "_".join(cmap_names) + "_concat"
         if reverse:
             combined_name += "_r"
 
     cmap = LinearSegmentedColormap.from_list(combined_name, final_colors)
 
     if reverse:
-        colors_reversed = cmap(np.linspace(0, 1, n))[::-1]
+        colors_reversed = cmap(np.linspace(0, 1, len(final_colors)))[::-1]
         cmap = LinearSegmentedColormap.from_list(combined_name, colors_reversed)
 
     return cmap
