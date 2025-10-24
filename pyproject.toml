@@ -1,6 +1,6 @@
 [project]
 name = "peepomap"
-version = "0.2.0"
+version = "0.2.1"
 description = "Just some extra Peepo-Powered Matplotlib colormaps and tools."
 readme = "README.md"
 license = { text = "MIT" }
