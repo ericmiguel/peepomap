@@ -6,6 +6,8 @@ from matplotlib import colors as mcolors
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 
+from peepomap.colormaps import ColormapInfo
+from peepomap.colormaps import ColormapType
 from peepomap.colormaps import get
 from peepomap.exceptions import NoColormapsProvidedError
 from peepomap.exceptions import WeightsMismatchError
@@ -894,11 +896,108 @@ def rgb_to_lab_l(rgb_color: np.ndarray) -> float:
     return l_star
 
 
+def export(
+    cmap: LinearSegmentedColormap,
+    n: int = 32,
+    *,
+    name: str | None = None,
+    cmap_type: ColormapType = "sequential",
+    description: str = "",
+    output_file: str | None = None,
+) -> ColormapInfo:
+    """Export colormap as ColormapInfo object.
+
+    Useful for adding custom colormaps to the registry or saving them persistently.
+
+    Parameters
+    ----------
+    cmap : LinearSegmentedColormap
+        Colormap to export
+    n : int, default=32
+        Number of colors to sample from the colormap
+    name : str | None, optional
+        Name for the colormap (uses cmap.name if None)
+    cmap_type : ColormapType, default="sequential"
+        Type of colormap (sequential, diverging, cyclic, multi-diverging)
+    description : str, default=""
+        Description of the colormap
+    output_file : str | None, optional
+        If provided, saves the Python code representation to this file
+
+    Returns
+    -------
+    ColormapInfo
+        Colormap metadata object ready to add to the registry
+
+    Examples
+    --------
+    >>> # Create a custom colormap
+    >>> cmap = peepomap.concat("viridis", "plasma", blend=0.1)
+    >>> # Export as ColormapInfo
+    >>> info = peepomap.export(
+    ...     cmap,
+    ...     n=32,
+    ...     name="viridis_plasma",
+    ...     cmap_type="sequential",
+    ...     description="Viridis blended with plasma"
+    ... )
+    >>> # Save to file
+    >>> peepomap.export(
+    ...     cmap,
+    ...     name="viridis_plasma",
+    ...     cmap_type="sequential",
+    ...     description="Viridis blended with plasma",
+    ...     output_file="my_cmap.py"
+    ... )
+    """
+    from pathlib import Path
+
+    # Get colormap name
+    cmap_name = name if name is not None else getattr(cmap, "name", "custom")
+
+    # Sample the colormap
+    x = np.linspace(0, 1, n)
+    colors_array = cmap(x)[:, :3]  # Drop alpha channel
+
+    # Convert to list of lists
+    colors_list = colors_array.tolist()
+
+    # Create ColormapInfo object
+    info = ColormapInfo(
+        name=cmap_name,
+        colors=colors_list,
+        cmap_type=cmap_type,
+        description=description,
+    )
+
+    # Save to file if requested
+    if output_file is not None:
+        # Format colors as Python code
+        colors_str = "[\n"
+        for color in colors_list:
+            colors_str += f"            [{color[0]}, {color[1]}, {color[2]}],\n"
+        colors_str += "        ]"
+
+        # Create the full code snippet
+        code = f'''    "{cmap_name}": ColormapInfo(
+        name="{cmap_name}",
+        colors={colors_str},
+        cmap_type="{cmap_type}",
+        description="{description}",
+    ),'''
+
+        Path(output_file).write_text(code)
+
+    return info
+
+
 __all__ = [
     "adjust",
     "combine",
+    "concat",
     "create_diverging",
     "create_linear",
+    "export",
     "hex_to_decimal_rgb",
     "reverse",
     "rgb_to_lab_l",

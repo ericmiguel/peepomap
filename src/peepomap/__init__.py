@@ -30,6 +30,7 @@ from peepomap.tools import combine
 from peepomap.tools import concat
 from peepomap.tools import create_diverging
 from peepomap.tools import create_linear
+from peepomap.tools import export
 from peepomap.tools import hex_to_decimal_rgb
 from peepomap.tools import reverse
 from peepomap.tools import set_special_colors
@@ -61,6 +62,7 @@ __all__ = [
     "concat",
     "create_diverging",
     "create_linear",
+    "export",
     "hex_to_decimal_rgb",
     "reverse",
     "set_special_colors",
