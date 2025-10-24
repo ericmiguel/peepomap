@@ -127,7 +127,7 @@ def create_reversed(
 
 
 def truncate(
-    name: str,
+    name: str | LinearSegmentedColormap,
     min_val: float = 0.0,
     max_val: float = 1.0,
     n: int = 256,
@@ -138,8 +138,8 @@ def truncate(
 
     Parameters
     ----------
-    name : str
-        Colormap name
+    name : str or LinearSegmentedColormap
+        Colormap name or object
     min_val : float, default=0.0
         Minimum value (0.0 to 1.0)
     max_val : float, default=1.0
@@ -163,6 +163,7 @@ def truncate(
     --------
     >>> cmap = peepomap.truncate("storm", 0.0, 0.5)
     >>> cmap = peepomap.truncate("storm", 0.25, 0.75, cmap_name="Storm Middle")
+    >>> cmap = peepomap.truncate(peepomap.get("storm"), 0.0, 0.5)
     """
     if not 0.0 <= min_val <= 1.0:
         msg = f"min_val must be between 0 and 1, got {min_val}"
@@ -174,10 +175,16 @@ def truncate(
         msg = f"min_val ({min_val}) must be less than max_val ({max_val})"
         raise ValueError(msg)
 
-    cmap = get(name)
+    if isinstance(name, str):
+        cmap = get(name)
+        original_name = name
+    else:
+        # It's already a colormap object
+        cmap = name
+        original_name = getattr(name, "name", "custom")
 
     if cmap_name is None:
-        truncated_name = f"{name}_truncated_{min_val:.2f}_{max_val:.2f}"
+        truncated_name = f"{original_name}_truncated_{min_val:.2f}_{max_val:.2f}"
     else:
         truncated_name = cmap_name
 
